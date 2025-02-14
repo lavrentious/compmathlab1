@@ -14,6 +14,16 @@ def sanitize(matrix: List[List[str]]) -> List[List[float]]:
     return res
 
 
+def calculate_discrepancies(
+    matrix: List[List[float]], bs: List[float], res: List[float]
+) -> List[float]:
+    n = len(matrix)
+    discrepancies = [0.0] * n
+    for i in range(n):
+        discrepancies[i] = bs[i] - sum([matrix[i][j] * res[j] for j in range(n)])
+    return discrepancies
+
+
 class Solver:
     matrix: List[List[float]]
     bs: List[float]

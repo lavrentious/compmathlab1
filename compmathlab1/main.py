@@ -1,5 +1,11 @@
+from typing import List
 import sys
 from gauss_solver import GaussSolver
+import numpy as np
+from solver import calculate_discrepancies
+
+if __name__ != "__main__":
+    exit(0)
 
 
 def read_input():
@@ -18,14 +24,21 @@ def read_input():
     return n, matrix, bs
 
 
-if __name__ != "__main__":
-    exit(0)
+def print_res(res: List[float]):
+    print("result:", res)
+    print("rounded result:", ", ".join(map(str, map(lambda x: f"{x:.4f}", res))))
+    print("discrepancies:", calculate_discrepancies(matrix, bs, res))
+
 
 n, matrix, bs = read_input()
 
 solver = GaussSolver(matrix, bs)
-res, discrepancies = solver.solve(True)
-print("result:", res)
-print("rounded result:", ", ".join(map(str, map(lambda x: f"{x:.4f}", res))))
-print("discrepancies:", discrepancies)
+res = solver.solve(True)
+print_res(res)
 print("A's determinant:", solver.det())
+
+
+print("----- solving with numpy -----")
+np_res = [float(x) for x in np.linalg.solve(matrix, bs)]
+print_res(np_res)
+print("A's determinant:", np.linalg.det(matrix))

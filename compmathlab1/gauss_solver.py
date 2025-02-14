@@ -14,7 +14,7 @@ class GaussSolver(Solver):
             print(f"[{row}] | {self.bs[i]:>8.4f}")
         print("-" * (10 * n))
 
-    def solve(self, log=False) -> Tuple[List[float], List[float]]:
+    def solve(self, log=False) -> List[float]:
         old_matrix = [row.copy() for row in self.matrix]
         old_bs = self.bs.copy()
 
@@ -53,11 +53,4 @@ class GaussSolver(Solver):
         self.matrix = old_matrix
         self.bs = old_bs
 
-        # 3. discrepancy
-        discrepancies = [0.0] * n
-        for i in range(n):
-            discrepancies[i] = self.bs[i] - sum(
-                [self.matrix[i][j] * res[j] for j in range(n)]
-            )
-
-        return res, discrepancies
+        return res
