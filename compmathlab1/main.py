@@ -56,9 +56,15 @@ def validate_float(f: str) -> float:
 def read_dataset(
     in_stream: TextIOWrapper | Any,
 ) -> tuple[List[List[float]], List[float]]:
+    silent = in_stream != sys.stdin
+
+    if not silent:
+        print("enter N: ", end="")
     n = validate_n(in_stream.readline().strip())
 
     matrix: List[List[float]] = []
+    if not silent:
+        print(f"enter A matrix ({n}x{n}), whitespace separated on each line:")
     for i in range(n):
         row = list(map(validate_float, in_stream.readline().replace(",", ".").split()))
         if len(row) != n:
@@ -66,6 +72,8 @@ def read_dataset(
             exit(1)
         matrix.append(row)
 
+    if not silent:
+        print(f"enter B matrix ({n}x1), whitespace separated in 1 line:")
     bs = list(map(float, in_stream.readline().replace(",", ".").split()))
     if len(bs) != n:
         error(f"Invalid B matrix (expected {n} elements, got {len(bs)})")
@@ -90,8 +98,8 @@ def run() -> None:
 
     file_path: str | None = args.filepath
 
-    in_stream: None | TextIOWrapper | Any = None
-    out_stream: None | TextIOWrapper | Any = None
+    in_stream: None | TextIOWrapper | Any = sys.stdin
+    out_stream: None | TextIOWrapper | Any = sys.stdout
     if file_path:
         if args.generate is None:
             if not os.path.exists(file_path):
@@ -100,12 +108,12 @@ def run() -> None:
             if not os.access(file_path, os.R_OK):
                 error(f"File '{file_path}' cannot be read. Permission denied.")
                 return
-            in_stream = sys.stdin if file_path is None else open(file_path, "r")
+            in_stream = open(file_path, "r")
         else:
             if not os.access(file_path, os.W_OK):
                 error(f"File '{file_path}' cannot be written. Permission denied.")
                 return
-            out_stream = sys.stdout if file_path is None else open(file_path, "w")
+            out_stream = open(file_path, "w")
     silent = file_path is not None
 
     if args.help:
