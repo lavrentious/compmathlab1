@@ -142,26 +142,32 @@ def run() -> None:
 
     file_path: str | None = args.filepath
 
-    if file_path:
-        if not os.path.exists(file_path):
-            error(f"File '{file_path}' does not exist.")
-            return
-        if not os.access(file_path, os.R_OK):
-            error(f"File '{file_path}' cannot be read. Permission denied.")
-            return
-    in_stream = sys.stdin if file_path is None else open(file_path, "r")
+    in_stream: None | TextIOWrapper | Any = None
     out_stream: None | TextIOWrapper | Any = None
+    if file_path:
+        if args.generate is None:
+            if not os.path.exists(file_path):
+                error(f"File '{file_path}' does not exist.")
+                return
+            if not os.access(file_path, os.R_OK):
+                error(f"File '{file_path}' cannot be read. Permission denied.")
+                return
+            in_stream = sys.stdin if file_path is None else open(file_path, "r")
+        else:
+            if not os.access(file_path, os.W_OK):
+                error(f"File '{file_path}' cannot be written. Permission denied.")
+                return
+            out_stream = sys.stdout if file_path is None else open(file_path, "w")
     silent = file_path is not None
 
     if args.help:
         parser.print_help()
         return
-    elif args.generate != None:
+    elif args.generate is not None:
         # generate mode
         validate_n(args.generate)
         n: int = int(args.generate)
         print(f"generating {n=}")
-        out_stream = sys.stdout if file_path is None else open(file_path, "w")
         generate_random_dataset(out_stream, n)
     else:
         # solve mode
