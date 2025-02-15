@@ -114,7 +114,6 @@ def run() -> None:
                 error(f"File '{file_path}' cannot be written. Permission denied.")
                 return
             out_stream = open(file_path, "w")
-    silent = file_path is not None
 
     if args.help:
         parser.print_help()
@@ -130,7 +129,7 @@ def run() -> None:
         matrix, bs = read_dataset(in_stream)
         solver = GaussSolver(matrix, bs)
 
-        res = solver.solve(not silent)
+        res = solver.solve()
         print_res(res, matrix, bs)
         print("A's determinant:", solver.det())
 
