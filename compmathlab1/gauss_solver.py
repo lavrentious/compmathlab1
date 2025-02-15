@@ -46,7 +46,6 @@ class GaussSolver(Solver):
         old_bs = self.bs.copy()
         permutations = self.to_upper_triangle()
         ans = (-1) ** permutations
-        print(self.matrix)
         for i in range(len(self.matrix)):
             if self.matrix[i][i] == 0:
                 ans = 0
