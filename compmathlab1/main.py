@@ -13,12 +13,14 @@ def read_input():
         with open(sys.argv[1], "r") as file:
             lines = file.readlines()
         n = int(lines[0].strip())
+        assert 1 <= n <= 20
         matrix = [list(map(float, lines[i + 1].split())) for i in range(n)]
         assert len(matrix) == n and all(len(row) == n for row in matrix)
         bs = list(map(float, lines[n + 1].split()))
         assert len(bs) == n
     else:
         n = int(input("enter N: "))
+        assert 1 <= n <= 20
         print("enter A (NxN):")
         matrix = [list(map(float, input().split())) for _ in range(n)]
         assert len(matrix) == n and all(len(row) == n for row in matrix)
