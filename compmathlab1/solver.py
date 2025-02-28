@@ -1,5 +1,5 @@
-from typing import List
 from math import isnan
+from typing import List
 
 
 def sanitize(matrix: List[List[str]]) -> List[List[float]]:
@@ -31,7 +31,6 @@ class Solver:
     def __init__(self, matrix: List[List[float]], bs: List[float]):
         self.matrix = matrix
         self.bs = bs
-        pass
 
     def det(self) -> float:
         def sub_det(matrix: List[List[float]]) -> float:

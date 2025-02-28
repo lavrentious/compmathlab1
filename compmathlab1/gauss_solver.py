@@ -1,6 +1,6 @@
 import sys
 from io import TextIOWrapper
-from typing import Any, List, Tuple
+from typing import Any, List
 
 from solver import Solver
 

@@ -1,6 +1,6 @@
 from enum import Enum
-from typing import Any
 from io import TextIOWrapper
+from typing import Any
 
 
 class Level(Enum):
@@ -16,7 +16,6 @@ class Logger:
 
     def __init__(self, file=None):
         self.file = file
-        pass
 
     def log(
         self, *args: Any, level: Level = Level.INFO, sep: str = " ", end: str = "\n"

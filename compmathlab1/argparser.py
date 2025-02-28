@@ -1,10 +1,11 @@
-import sys
 import argparse
+import sys
 from argparse import Namespace
+from enum import Enum
 from io import TextIOWrapper
 from typing import Any
+
 from logger import Logger
-from enum import Enum
 
 
 class OutputFormat(Enum):
