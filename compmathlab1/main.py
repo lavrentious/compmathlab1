@@ -1,23 +1,18 @@
+from argparser import ArgParser
 import sys
-import argparse
-import os
+from validators import validate_n, validate_float
 from random import random
 from io import TextIOWrapper
 from typing import Any, List
 from gauss_solver import GaussSolver
 from solver import calculate_discrepancies
+from logger import Logger
 import numpy as np
 
 if __name__ != "__main__":
     exit(0)
 
-
-def log(msg: str):
-    print(msg, file=sys.stdout)
-
-
-def error(msg: str):
-    print(f"[ERROR] {msg}", file=sys.stderr)
+logger = Logger()
 
 
 def generate_random_dataset(out_stream: TextIOWrapper | Any, n: int):
@@ -32,27 +27,6 @@ def generate_random_dataset(out_stream: TextIOWrapper | Any, n: int):
     out_stream.write("\n")
 
 
-#  ----- validations -----
-def validate_n(n: str) -> int:
-    if not n.isdigit():
-        error("N must be an integer.")
-        exit(1)
-
-    if not 1 <= int(n) <= 20:
-        error("N must be in range [1, 20]")
-        exit(1)
-
-    return int(n)
-
-
-def validate_float(f: str) -> float:
-    try:
-        return float(f)
-    except ValueError:
-        error(f"{f} is not a float")
-        exit(1)
-
-
 def read_dataset(
     in_stream: TextIOWrapper | Any,
 ) -> tuple[List[List[float]], List[float]]:
@@ -60,87 +34,78 @@ def read_dataset(
 
     if not silent:
         print("enter N: ", end="")
-    n = validate_n(in_stream.readline().strip())
+    n = validate_n(in_stream.readline().strip(), logger)
 
     matrix: List[List[float]] = []
     if not silent:
         print(f"enter A matrix ({n}x{n}), whitespace separated on each line:")
     for i in range(n):
-        row = list(map(validate_float, in_stream.readline().replace(",", ".").split()))
+        row = list(
+            map(
+                lambda x: validate_float(x, logger),
+                in_stream.readline().replace(",", ".").split(),
+            )
+        )
         if len(row) != n:
-            error(f"Invalid A matrix row {i=} (expected {n} elements, got {len(row)})")
+            logger.critical(
+                f"Invalid A matrix row {i=} (expected {n} elements, got {len(row)})"
+            )
             exit(1)
         matrix.append(row)
 
     if len(set(tuple(row) for row in matrix)) != len(matrix):
-        error("A matrix must be unique")
+        logger.critical("A matrix must be unique")
         exit(1)
 
     if not silent:
         print(f"enter B matrix ({n}x1), whitespace separated in 1 line:")
     bs = list(map(float, in_stream.readline().replace(",", ".").split()))
     if len(bs) != n:
-        error(f"Invalid B matrix (expected {n} elements, got {len(bs)})")
+        logger.critical(f"Invalid B matrix (expected {n} elements, got {len(bs)})")
         exit(1)
     return matrix, bs
 
 
-def print_res(res: List[float], matrix: List[List[float]], bs: List[float]):
-    print("result:", res)
-    print("rounded result:", ", ".join(map(str, map(lambda x: f"{x:.4f}", res))))
-    print("discrepancies:", calculate_discrepancies(matrix, bs, res))
+def print_res(
+    res: List[float],
+    matrix: List[List[float]],
+    bs: List[float],
+    out_stream: TextIOWrapper | Any = sys.stdout,
+):
+    print("result:", res, file=out_stream)
+    print(
+        "rounded result:",
+        ", ".join(map(str, map(lambda x: f"{x:.4f}", res))),
+        file=out_stream,
+    )
+    print("discrepancies:", calculate_discrepancies(matrix, bs, res), file=out_stream)
 
 
 def run() -> None:
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("-h", "--help", action="store_true", help="shows help")
-    parser.add_argument(
-        "-g", "--generate", help="generate a random dataset with given N"
-    )
-    parser.add_argument("filepath", nargs="?", help="file to read from")
-    args = parser.parse_args()
+    parser = ArgParser()
+    parser.parse_and_validate_args(logger)
 
-    file_path: str | None = args.filepath
-
-    in_stream: None | TextIOWrapper | Any = sys.stdin
-    out_stream: None | TextIOWrapper | Any = sys.stdout
-    if file_path:
-        if args.generate is None:
-            if not os.path.exists(file_path):
-                error(f"File '{file_path}' does not exist.")
-                return
-            if not os.access(file_path, os.R_OK):
-                error(f"File '{file_path}' cannot be read. Permission denied.")
-                return
-            in_stream = open(file_path, "r")
-        else:
-            if os.path.exists(file_path) and not os.access(file_path, os.W_OK):
-                error(f"File '{file_path}' cannot be written. Permission denied.")
-                return
-            out_stream = open(file_path, "w")
-
-    if args.help:
+    if parser.help_mode:
         parser.print_help()
         return
-    elif args.generate is not None:
+    elif parser.generate_mode and parser.generate_n is not None:
         # generate mode
-        validate_n(args.generate)
-        n: int = int(args.generate)
-        print(f"generating {n=}")
-        generate_random_dataset(out_stream, n)
-    else:
+        n = parser.generate_n
+        logger.debug(f"generating {n=}")
+        generate_random_dataset(parser.out_stream, n)
+    elif parser.standard_mode:
         # solve mode
-        matrix, bs = read_dataset(in_stream)
+        matrix, bs = read_dataset(parser.in_stream)
         solver = GaussSolver(matrix, bs)
 
-        res = solver.solve()
-        print_res(res, matrix, bs)
-        print("A's determinant:", solver.det())
+        res = solver.solve(parser.verbose)
+        print_res(res, matrix, bs, parser.out_stream)
+        print("A's determinant:", solver.det(), file=parser.out_stream)
 
-        print("----- solving with numpy -----")
+        print("----- solving with numpy -----", file=parser.out_stream)
         np_res = [float(x) for x in np.linalg.solve(matrix, bs)]
-        print_res(np_res, matrix, bs)
-        print("A's determinant:", np.linalg.det(matrix))
+        print_res(np_res, matrix, bs, parser.out_stream)
+        print("A's determinant:", np.linalg.det(matrix), file=parser.out_stream)
 
 
 run()

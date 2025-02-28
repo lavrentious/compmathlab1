@@ -1,18 +1,28 @@
 from typing import List, Tuple
 from solver import Solver
+from io import TextIOWrapper
+import sys
+from typing import Any
 
 
 class GaussSolver(Solver):
+    out_stream: TextIOWrapper | Any = sys.stdout
 
-    def __init__(self, matrix: List[List[float]], bs: List[float]):
+    def __init__(
+        self,
+        matrix: List[List[float]],
+        bs: List[float],
+        out_stream: TextIOWrapper | Any = None,
+    ):
+        self.out_stream = out_stream
         super().__init__([row.copy() for row in matrix], bs.copy())
 
     def print_matrix(self):
         n = len(self.matrix)
         for i in range(n):
             row = " ".join(f"{self.matrix[i][j]:>8.4f}" for j in range(n))
-            print(f"[{row}] | {self.bs[i]:>8.4f}")
-        print("-" * (10 * n))
+            print(f"[{row}] | {self.bs[i]:>8.4f}", file=self.out_stream)
+        print("-" * (10 * n), file=self.out_stream)
 
     def to_upper_triangle(self, log=False) -> int:
         permutations = 0
@@ -36,7 +46,7 @@ class GaussSolver(Solver):
                 self.bs[k] -= c * self.bs[i]
 
             if log:
-                print(f"step {i + 1}:")
+                print(f"step {i + 1}:", file=self.out_stream)
                 self.print_matrix()
 
         return permutations
