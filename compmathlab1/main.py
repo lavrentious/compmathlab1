@@ -1,14 +1,14 @@
-from argparser import ArgParser
 import sys
-from validators import validate_n, validate_float
-from random import random
 from io import TextIOWrapper
+from random import random
 from typing import Any, List
+
+from argparser import ArgParser, OutputFormat
 from gauss_solver import GaussSolver
-from solver import calculate_discrepancies
 from logger import Logger
+from solver import calculate_discrepancies
 from utils import ResWriter
-from argparser import OutputFormat
+from validators import validate_float, validate_n
 
 if __name__ != "__main__":
     exit(0)
@@ -99,12 +99,16 @@ def run() -> None:
         matrix, bs = read_dataset(parser.in_stream)
         solver = GaussSolver(matrix, bs)
 
-        res = solver.solve(
-            parser.verbose and parser.output_format == OutputFormat.HUMAN
-        )
+        try:
+            res = solver.solve(
+                parser.verbose and parser.output_format == OutputFormat.HUMAN
+            )
 
-        res_writer = ResWriter(parser.out_stream)
-        res_writer.write(res, matrix, bs, solver.det(), parser.output_format)
+            res_writer = ResWriter(parser.out_stream)
+            res_writer.write(res, matrix, bs, solver.det(), parser.output_format)
+        except Exception as e:
+            logger.critical(e)
+            exit(1)
 
 
 run()

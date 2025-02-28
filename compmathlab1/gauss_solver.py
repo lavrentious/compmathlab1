@@ -1,8 +1,8 @@
-from typing import List, Tuple
-from solver import Solver
-from io import TextIOWrapper
 import sys
-from typing import Any
+from io import TextIOWrapper
+from typing import Any, List, Tuple
+
+from solver import Solver
 
 
 class GaussSolver(Solver):
@@ -39,7 +39,10 @@ class GaussSolver(Solver):
                         break
 
             for k in range(i + 1, n):
-                c = self.matrix[k][i] / self.matrix[i][i]
+                try:
+                    c = self.matrix[k][i] / self.matrix[i][i]
+                except ZeroDivisionError:
+                    raise Exception("the system is not solvable (rank(A) < n)")
                 self.matrix[k][i] = 0
                 for j in range(i + 1, n):
                     self.matrix[k][j] -= c * self.matrix[i][j]
