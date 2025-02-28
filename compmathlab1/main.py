@@ -71,7 +71,7 @@ def read_dataset(
             error(f"Invalid A matrix row {i=} (expected {n} elements, got {len(row)})")
             exit(1)
         matrix.append(row)
-    
+
     if len(set(tuple(row) for row in matrix)) != len(matrix):
         error("A matrix must be unique")
         exit(1)
@@ -114,9 +114,9 @@ def run() -> None:
                 return
             in_stream = open(file_path, "r")
         else:
-            # if not os.access(file_path, os.W_OK):
-            #     error(f"File '{file_path}' cannot be written. Permission denied.")
-            #     return
+            if os.path.exists(file_path) and not os.access(file_path, os.W_OK):
+                error(f"File '{file_path}' cannot be written. Permission denied.")
+                return
             out_stream = open(file_path, "w")
 
     if args.help:
