@@ -7,7 +7,8 @@ from typing import Any, List
 from gauss_solver import GaussSolver
 from solver import calculate_discrepancies
 from logger import Logger
-import numpy as np
+from utils import ResWriter
+from argparser import OutputFormat
 
 if __name__ != "__main__":
     exit(0)
@@ -98,14 +99,12 @@ def run() -> None:
         matrix, bs = read_dataset(parser.in_stream)
         solver = GaussSolver(matrix, bs)
 
-        res = solver.solve(parser.verbose)
-        print_res(res, matrix, bs, parser.out_stream)
-        print("A's determinant:", solver.det(), file=parser.out_stream)
+        res = solver.solve(
+            parser.verbose and parser.output_format == OutputFormat.HUMAN
+        )
 
-        print("----- solving with numpy -----", file=parser.out_stream)
-        np_res = [float(x) for x in np.linalg.solve(matrix, bs)]
-        print_res(np_res, matrix, bs, parser.out_stream)
-        print("A's determinant:", np.linalg.det(matrix), file=parser.out_stream)
+        res_writer = ResWriter(parser.out_stream)
+        res_writer.write(res, matrix, bs, solver.det(), parser.output_format)
 
 
 run()
