@@ -11,6 +11,7 @@ from logger import Logger
 class OutputFormat(Enum):
     HUMAN = "human"
     JSON = "json"
+    XML = "xml"
 
 
 FORMATS = [e.value for e in OutputFormat]
